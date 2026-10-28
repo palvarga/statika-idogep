@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Nyolcszintes webes fizikajáték a statika tanulásához: emelő, lejtő, nyomaték, csigasor, állékonyság, erőfelbontás, rácsos tartó és ellensúly az őskortól a modern korig.">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>Statika Időgép</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,300..900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: drafting table. Era rail on top, scene sheet left, work panel right; stacks below 900px. */
+:root{
+  --paper:#e8edf0; --sheet:#f5f8f9; --panel:#fbfcfd; --ink:#13263b; --muted:#566a7d; --rule:#c3d0da; --gridbg:rgba(31,95,139,.075);
+  --accent:#1f5f8b; --accent-ink:#ffffff; --accent-soft:#dbe8f1; --on-strong:#ffffff;
+  --ok:#22704a; --ok-soft:#ddefe4; --bad:#ae2a1d; --bad-soft:#f6e1dd; --star:#a8700a;
+  --c-paper:#f5f8f9; --c-grid:#e0e8ed; --c-ink:#14283d; --c-muted:#7b8c9b; --c-force:#cf3d1c; --c-tension:#1b6ea6; --c-compress:#b8740a;
+  --c-ok:#22704a; --c-bad:#c0271a; --c-wood:#8b5a2f; --c-stone:#bcb6ab; --c-water:#94bfd8; --c-sand:#e4d3a7; --c-fill:#d3dde4; --c-marble:#eeeae1;
+  --f-display:"Anybody","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0b1a29; --sheet:#0f2235; --panel:#11263a; --ink:#e2ecf3; --muted:#93a6b8; --rule:#24415c; --gridbg:rgba(108,180,224,.06);
+    --accent:#6cb4e0; --accent-ink:#071421; --accent-soft:#16334d; --on-strong:#071421;
+    --ok:#62cf8f; --ok-soft:#123526; --bad:#ff7a6b; --bad-soft:#3b1a17; --star:#f0b43c;
+    --c-paper:#0f2235; --c-grid:#16304a; --c-ink:#dfeaf3; --c-muted:#7e94a9; --c-force:#ff7447; --c-tension:#5fb0ec; --c-compress:#f0b43c;
+    --c-ok:#62cf8f; --c-bad:#ff6a5c; --c-wood:#c48a55; --c-stone:#59636d; --c-water:#2b6890; --c-sand:#86734f; --c-fill:#294560; --c-marble:#3a4a5a;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0b1a29; --sheet:#0f2235; --panel:#11263a; --ink:#e2ecf3; --muted:#93a6b8; --rule:#24415c; --gridbg:rgba(108,180,224,.06);
+  --accent:#6cb4e0; --accent-ink:#071421; --accent-soft:#16334d; --on-strong:#071421;
+  --ok:#62cf8f; --ok-soft:#123526; --bad:#ff7a6b; --bad-soft:#3b1a17; --star:#f0b43c;
+  --c-paper:#0f2235; --c-grid:#16304a; --c-ink:#dfeaf3; --c-muted:#7e94a9; --c-force:#ff7447; --c-tension:#5fb0ec; --c-compress:#f0b43c;
+  --c-ok:#62cf8f; --c-bad:#ff6a5c; --c-wood:#c48a55; --c-stone:#59636d; --c-water:#2b6890; --c-sand:#86734f; --c-fill:#294560; --c-marble:#3a4a5a;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--gridbg) 1px,transparent 1px),linear-gradient(90deg,var(--gridbg) 1px,transparent 1px);
+  background-size:24px 24px;
+  color:var(--ink); font-family:var(--f-body); font-size:15px; line-height:1.55;
+}
+.wrap{max-width:1220px;margin:0 auto;padding-block:22px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:22px}
+header.top{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap}
+.brand h1{margin:0;font-family:var(--f-display);font-variation-settings:"wdth" 138;font-stretch:138%;font-weight:820;font-size:clamp(30px,5.4vw,58px);line-height:.92;letter-spacing:-.005em;text-transform:uppercase;text-wrap:balance}
+.brand p{margin:8px 0 0;font-family:var(--f-mono);font-size:13px;color:var(--muted);letter-spacing:.02em}
+.score{font-family:var(--f-mono);font-size:14px;color:var(--muted);text-align:right}
+.score b{display:block;font-size:26px;color:var(--star);font-weight:600;font-variant-numeric:tabular-nums}
+
+.rail{overflow-x:auto;padding-bottom:4px}
+.timeline{list-style:none;margin:0;padding:0;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(118px,1fr);min-width:0}
+.timeline li{position:relative}
+.timeline li::before{content:"";position:absolute;top:10px;left:0;right:0;height:2px;background:var(--rule)}
+.timeline button{position:relative;width:100%;background:none;border:0;padding:26px 10px 8px 0;text-align:left;color:var(--ink);cursor:pointer;display:grid;gap:1px;font:inherit}
+.timeline button[disabled]{cursor:not-allowed;opacity:.48}
+.tl-dot{position:absolute;top:3px;left:0;width:16px;height:16px;border-radius:50%;border:2px solid var(--ink);background:var(--paper)}
+.done .tl-dot{background:var(--accent);border-color:var(--accent)}
+.current .tl-dot{box-shadow:0 0 0 4px var(--accent-soft);border-color:var(--accent)}
+.tl-year{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tl-era{font-family:var(--f-display);font-variation-settings:"wdth" 96;font-stretch:96%;font-weight:640;font-size:16px;line-height:1.15}
+.current .tl-era{color:var(--accent)}
+.tl-stars{font-family:var(--f-mono);font-size:13px;color:var(--star);letter-spacing:.08em}
+.tl-stars.locked{color:var(--muted);letter-spacing:.04em;font-size:12px}
+
+.stage{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:900px){.stage{grid-template-columns:minmax(0,1fr)}}
+.sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:4px;overflow:hidden;min-width:0}
+.sheet-head{display:flex;justify-content:space-between;gap:6px 14px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--rule);font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sheet-head strong{color:var(--ink);font-weight:600}
+canvas{display:block;width:100%;aspect-ratio:8/5;height:auto;max-width:100%}
+.givens{padding:14px 16px 16px;border-top:1px solid var(--rule);display:grid;gap:10px}
+.givens h3,.panel h3{margin:0;font-family:var(--f-mono);font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.givens dl{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px 20px;margin:0}
+.givens dt{font-size:13px;color:var(--muted)}
+.givens dd{margin:0;font-family:var(--f-mono);font-size:14px;font-variant-numeric:tabular-nums}
+
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:20px;display:grid;gap:16px;min-width:0}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.panel h2{margin:4px 0 0;font-family:var(--f-display);font-variation-settings:"wdth" 112;font-stretch:112%;font-weight:760;font-size:clamp(25px,3vw,33px);line-height:1.04;text-wrap:balance}
+.panel p{margin:0;max-width:62ch}
+.task{display:grid;gap:4px}
+.task p{font-weight:500}
+fieldset.controls{border:0;margin:0;padding:0;display:grid;gap:14px;min-width:0}
+.ctl{display:grid;gap:6px}
+.ctl-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.ctl label,.ctl .lbl{font-size:14px;font-weight:500}
+.ctl output{font-family:var(--f-mono);font-size:15px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent);height:28px}
+.note{font-size:13px;color:var(--muted)}
+.wrow{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap}
+.wrow .wname{font-family:var(--f-mono);font-size:14px;font-weight:600;min-width:118px}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--rule);border-radius:3px;overflow:hidden;background:var(--sheet)}
+.seg button{font-family:var(--f-mono);font-size:13px;padding:7px 11px;border:0;border-right:1px solid var(--rule);background:transparent;color:var(--ink);cursor:pointer;min-width:36px}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.seg button.t[aria-pressed="true"]{background:var(--c-tension);color:var(--on-strong)}
+.seg button.c[aria-pressed="true"]{background:var(--c-compress);color:var(--on-strong)}
+.stepper{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.stepper button{width:40px;height:40px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);border-radius:3px;font-family:var(--f-mono);font-size:20px;cursor:pointer}
+.stepper .val{font-family:var(--f-mono);font-size:24px;font-weight:600;min-width:2ch;text-align:center;font-variant-numeric:tabular-nums}
+.stepper .desc{font-size:13px;color:var(--muted);flex:1 1 160px;min-width:0}
+.switch{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;cursor:pointer}
+.switch input{width:20px;height:20px;accent-color:var(--accent)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{font-family:var(--f-mono);font-size:13px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;padding:12px 18px;border-radius:3px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn[disabled]{opacity:.5;cursor:default}
+button:focus-visible,input:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.meta{font-family:var(--f-mono);font-size:12px;color:var(--muted);margin-left:auto}
+.hint{background:var(--accent-soft);padding:12px 14px;border-radius:3px;font-size:14px}
+.hint strong{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:2px;color:var(--accent)}
+.result{border:1px solid var(--rule);padding:14px;border-radius:3px;display:grid;gap:10px}
+.result.ok{border-color:var(--ok);background:var(--ok-soft)}
+.result.bad{border-color:var(--bad);background:var(--bad-soft)}
+.pill{font-family:var(--f-mono);font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.result.ok .pill{color:var(--ok)} .result.bad .pill{color:var(--bad)}
+.rtable{width:100%;border-collapse:collapse;font-family:var(--f-mono);font-size:13px;font-variant-numeric:tabular-nums}
+.rtable td{padding:4px 6px 4px 0;border-top:1px solid var(--rule);vertical-align:top}
+.rtable td:nth-child(2),.rtable td:nth-child(3){white-space:nowrap}
+.rtable td.mk{text-align:right;width:1.5em;font-weight:600}
+.rtable .y{color:var(--ok)} .rtable .n{color:var(--bad)}
+.learned{border-top:1px dashed var(--rule);padding-top:16px;display:grid;gap:10px}
+.formula{font-family:var(--f-mono);font-size:16px;font-weight:600;padding:8px 12px;border:1px solid var(--rule);background:var(--sheet);border-radius:3px;justify-self:start;max-width:100%;overflow-x:auto}
+.finale{font-family:var(--f-display);font-variation-settings:"wdth" 110;font-stretch:110%;font-weight:700;font-size:20px;line-height:1.2}
+footer{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;font-size:13px;color:var(--muted)}
+footer p{margin:0;max-width:72ch}
+footer .links{display:flex;gap:10px;flex-wrap:wrap;margin-left:auto}
+.linkbtn{background:none;border:1px solid var(--rule);color:var(--ink);padding:7px 11px;border-radius:3px;font-family:var(--f-mono);font-size:12px;cursor:pointer}
+.linkbtn[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Statika Időgép</h1>
+      <p>Erők egyensúlya nyolc korszakon át, a kőkori emelőtől a toronydaruig</p>
+    </div>
+    <div class="score" aria-live="polite"><b id="totalStars">0 / 24 ★</b>összegyűjtött csillag</div>
+  </header>
+
+  <nav class="rail" aria-label="Korszakok"><ol class="timeline" id="timeline"></ol></nav>
+
+  <main class="stage" id="stage">
+    <section class="sheet" aria-label="Jelenet">
+      <div class="sheet-head"><span id="sheetLeft"></span><strong id="sheetRight"></strong></div>
+      <canvas id="scene" role="img" aria-label="A szint jelenete"></canvas>
+      <div class="givens"><h3>Adatok</h3><dl id="givens"></dl></div>
+    </section>
+
+    <section class="panel" aria-labelledby="title">
+      <div>
+        <div class="eyebrow" id="eyebrow"></div>
+        <h2 id="title"></h2>
+      </div>
+      <p id="story"></p>
+      <div class="task"><h3>Feladat</h3><p id="task"></p></div>
+      <fieldset class="controls" id="controls"></fieldset>
+      <div class="actions">
+        <button class="btn" id="tryBtn" type="button">Próba</button>
+        <button class="btn ghost" id="hintBtn" type="button">Tipp</button>
+        <span class="meta" id="meta"></span>
+      </div>
+      <div class="hint" id="hint" hidden></div>
+      <div class="result" id="result" hidden aria-live="polite"></div>
+      <div class="learned" id="learned" hidden></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Egyszerűsített modellek: g ≈ 10 m/s², merev testek, súlytalan rudak és kötelek. A rajzok a szemléltetést szolgálják, nem mindenhol méretarányosak. A haladásodat ez a böngésző jegyzi meg.</p>
+    <div class="links">
+      <button class="linkbtn" id="teacherBtn" type="button" aria-pressed="false">Tanári mód: minden szint nyitva</button>
+      <button class="linkbtn" id="resetBtn" type="button">Haladás törlése</button>
+    </div>
+  </footer>
+</div>
+
+<script>
+(()=>{
+"use strict";
+const W=800,H=500;
+const cv=document.getElementById('scene'),ctx=cv.getContext('2d');
+const $=id=>document.getElementById(id);
+let C={},FS=1;
+const KEYS=['paper','grid','ink','muted','force','tension','compress','ok','bad','wood','stone','water','sand','fill','marble'];
+function readColors(){const cs=getComputedStyle(document.documentElement);KEYS.forEach(k=>C[k]=cs.getPropertyValue('--c-'+k).trim()||'#888');}
+const reduced=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const rad=d=>d*Math.PI/180,deg=r=>r*180/Math.PI;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const eIO=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2,eOut=t=>1-Math.pow(1-t,3),eIn=t=>t*t*t;
+const eBack=t=>{const c1=1.4,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2);};
+const fmt=(v,d=0)=>Number(v).toLocaleString('hu-HU',{minimumFractionDigits:d,maximumFractionDigits:d});
+const sgn=v=>v>0?'+':(v<0?'−':'');
+const fmtS=(v,d=0)=>sgn(v)+fmt(Math.abs(v),d);
+
+/* ---------- drawing helpers ---------- */
+function ln(x1,y1,x2,y2,col,w=2,dash){ctx.save();ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineCap='round';if(dash)ctx.setLineDash(dash);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.restore();}
+function poly(pts,fill,stroke,w=2){ctx.save();ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=w;ctx.lineJoin='round';ctx.stroke();}ctx.restore();}
+function circ(x,y,r,fill,stroke,w=2){ctx.save();ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=w;ctx.stroke();}ctx.restore();}
+function rect(x,y,w,h,fill,stroke,lw=2){ctx.save();if(fill){ctx.fillStyle=fill;ctx.fillRect(x,y,w,h);}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.strokeRect(x,y,w,h);}ctx.restore();}
+function txt(s,x,y,o={}){ctx.save();const size=(o.size||14)*FS;ctx.font=`${o.weight||500} ${size}px "IBM Plex Mono", ui-monospace, Menlo, monospace`;ctx.textAlign=o.align||'left';ctx.textBaseline=o.base||'middle';ctx.lineJoin='round';ctx.lineWidth=4.5*Math.min(FS,1.4);ctx.strokeStyle=C.paper;ctx.strokeText(s,x,y);ctx.fillStyle=o.col||C.ink;ctx.fillText(s,x,y);ctx.restore();}
+function arrow(x1,y1,x2,y2,col,label,o={}){const a=Math.atan2(y2-y1,x2-x1),hs=o.hs||12,w=o.w||3;ln(x1,y1,x2-Math.cos(a)*hs*.7,y2-Math.sin(a)*hs*.7,col,w);ctx.save();ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-hs*Math.cos(a-.38),y2-hs*Math.sin(a-.38));ctx.lineTo(x2-hs*Math.cos(a+.38),y2-hs*Math.sin(a+.38));ctx.closePath();ctx.fill();ctx.restore();if(label)txt(label,o.lx??x2+8,o.ly??y2,{col,weight:600,align:o.align||'left',size:o.size||14});}
+function ground(y,x1=0,x2=W){ln(x1,y,x2,y,C.ink,2);ctx.save();ctx.strokeStyle=C.muted;ctx.lineWidth=1;ctx.beginPath();for(let x=x1+6;x<x2+10;x+=12){ctx.moveTo(x,y+1);ctx.lineTo(x-9,y+11);}ctx.stroke();ctx.restore();}
+function dim(x1,x2,y,label,col){col=col||C.muted;ln(x1,y,x2,y,col,1.2);ln(x1,y-6,x1,y+6,col,1.2);ln(x2,y-6,x2,y+6,col,1.2);if(label)txt(label,(x1+x2)/2,y-12,{align:'center',size:13});}
+function vdim(x,y1,y2,label){ln(x,y1,x,y2,C.muted,1.2);ln(x-6,y1,x+6,y1,C.muted,1.2);ln(x-6,y2,x+6,y2,C.muted,1.2);if(label)txt(label,x+10,(y1+y2)/2,{size:13});}
+function bg(){ctx.fillStyle=C.paper;ctx.fillRect(0,0,W,H);ctx.save();ctx.strokeStyle=C.grid;ctx.lineWidth=1;ctx.beginPath();for(let x=0;x<=W;x+=25){ctx.moveTo(x+.5,0);ctx.lineTo(x+.5,H);}for(let y=0;y<=H;y+=25){ctx.moveTo(0,y+.5);ctx.lineTo(W,y+.5);}ctx.stroke();ctx.restore();}
+function person(fx,fy,hx,hy,col,lean=0){col=col||C.ink;const hip=[fx+lean*.35,fy-34],sh=[fx+lean,fy-62],hd=[fx+lean*1.2,fy-75];
+  ctx.save();ctx.strokeStyle=col;ctx.lineWidth=3.2;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();
+  ctx.moveTo(fx-10,fy);ctx.lineTo(hip[0],hip[1]);ctx.lineTo(fx+9,fy);ctx.moveTo(hip[0],hip[1]);ctx.lineTo(sh[0],sh[1]);
+  const ex=(sh[0]+hx)/2+3,ey=(sh[1]+hy)/2+6;ctx.moveTo(sh[0],sh[1]);ctx.lineTo(ex,ey);ctx.lineTo(hx,hy);ctx.moveTo(sh[0],sh[1]);ctx.lineTo(ex-4,ey+3);ctx.lineTo(hx-3,hy+2);ctx.stroke();
+  ctx.beginPath();ctx.arc(hd[0],hd[1],8.5,0,Math.PI*2);ctx.fillStyle=C.paper;ctx.fill();ctx.stroke();ctx.restore();}
+function arcLbl(x,y,r,a0,a1,label,lx,ly){ctx.save();ctx.strokeStyle=C.ink;ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(x,y,r,a0,a1,a1<a0);ctx.stroke();ctx.restore();if(label)txt(label,lx,ly,{size:13,weight:600});}
+
+/* ---------- levels ---------- */
+const CRANE=[{Q:0,d:0,label:'Üresen'},{Q:20,d:30,label:'1. teher: 20 kN, 30 m'},{Q:40,d:12,label:'2. teher: 40 kN, 12 m'},{Q:10,d:45,label:'3. teher: 10 kN, 45 m'}];
+const TRUSS={nodes:{A:[160,330],B:[400,330],C:[640,330],D:[400,138]},
+  members:[['AB','A','B','alsó öv, bal'],['BC','B','C','alsó öv, jobb'],['AD','A','D','ferde rúd, bal'],['DC','D','C','ferde rúd, jobb'],['BD','B','D','függőleges rúd']],
+  answer:{AB:'T',BC:'T',AD:'C',DC:'C',BD:'T'},force:{AB:62.5,BC:62.5,AD:80,DC:80,BD:100}};
+
+const LEVELS=[
+/* 1 — lever */
+{era:'Őskor',year:'Kőkorszak',place:'Folyóvölgy',principle:'Emelőtörvény',title:'A szikla a barlang előtt',
+ story:'Egy omlás után hatalmas szikla zárja el a barlang bejáratát. A törzs legerősebb vadásza sem bírja elgördíteni, de találtatok egy 4 méteres, erős fatörzset és egy kisebb követ, ami jó lesz alátámasztásnak.',
+ task:'Told el az alátámasztást (a forgáspontot) úgy, hogy a vadász le tudja nyomni a rúd végét, és a szikla legalább 12 cm-t emelkedjen. Ennyi kell, hogy görgőt tolhassatok alá.',
+ data:[['Szikla súlya','G = 1 500 N'],['A vadász legnagyobb ereje','F ≤ 400 N'],['Rúd hossza','k₁ + k₂ = 4,0 m'],['Ennyit nyom le a vadász a rúd végén','1,0 m'],['Szükséges emelés','≥ 12 cm']],
+ hint:'A szikla a forgásponttól k₁, a vadász k₂ = 4 − k₁ távolságra van. Két feltétel kell egyszerre: G·k₁ ≤ F·k₂ (bírja-e erővel), és 1,0 m · k₁/k₂ ≥ 0,12 m (elég magasra emel-e).',
+ formula:'F · k₂ = G · k₁',
+ learned:'Ez az emelő törvénye: a két oldal forgatónyomatéka (erő × erőkar) egyenlő. Ami erőben nyerünk, azt úton veszítjük el: a vadász egy teljes métert nyom, a szikla csak néhány centit emelkedik. Ez a mechanika aranyszabálya.',
+ init:()=>({xf:1.5}),
+ controls(s,ui){ui.slider({id:'xf',label:'Forgáspont távolsága a sziklától, k₁',min:.4,max:2,step:.05,value:s.xf,unit:'m',dec:2,on:v=>s.xf=v});},
+ evaluate(s){const k1=s.xf,k2=4-k1,F=1500*k1/k2,lift=k1/k2,forceOk=F<=400+1e-6,liftOk=lift>=.12-1e-6;let msg;
+  if(!forceOk)msg=`Túl messze van a forgáspont a sziklától. A vadásznak ${fmt(F)} N erővel kellene nyomnia, de csak 400 N-ra képes.`;
+  else if(!liftOk)msg=`A vadász le tudja nyomni a rudat, de a szikla csak ${fmt(lift*100,1)} cm-t emelkedik. Ez kevés, a görgő nem fér alá.`;
+  else msg=`Megmozdult! ${fmt(F)} N erő elég, a szikla ${fmt(lift*100,1)} cm-t emelkedik, és becsúszik alá a görgő.`;
+  return{ok:forceOk&&liftOk,forceOk,liftOk,F,lift,msg,rows:[['Szükséges erő',fmt(F)+' N','≤ 400 N',forceOk],['A szikla emelkedése',fmt(lift*100,1)+' cm','≥ 12 cm',liftOk]]};},
+ draw(s,p,r){bg();const G=420,S=140,x0=150,xf=s.xf,fx=x0+xf*S,py=G-35;
+  const th0=Math.asin(Math.min(.95,35/(xf*S)));let dth=0;
+  if(r)dth=r.forceOk?eIO(p)/(4-xf):.02*Math.sin(p*Math.PI*8)*(1-p);
+  const th=th0-dth,P=u=>[fx+u*Math.cos(th),py-u*Math.sin(th)];
+  const[lx,ly]=P(-xf*S),[rx,ry]=P((4-xf)*S);const ly0=py+xf*S*Math.sin(th0),lift=Math.max(0,ly0-ly);
+  ground(G);
+  poly([[fx-30,G],[fx-15,py+3],[fx+12,py+1],[fx+30,G]],C.stone,C.ink,1.8);
+  ln(lx,ly,rx,ry,C.ink,12);ln(lx,ly,rx,ry,C.wood,9);
+  const bx=x0-36,by=G-64-lift;
+  poly([[bx-60,by+18],[bx-48,by-40],[bx-6,by-64],[bx+44,by-50],[bx+64,by-4],[bx+52,by+50],[bx+6,by+64],[bx-44,by+52]],C.stone,C.ink,2);
+  ln(bx-22,by-22,bx+12,by-34,C.muted,1.2);ln(bx+18,by+14,bx+34,by+34,C.muted,1.2);
+  if(r&&r.ok&&p>.7){const t=(p-.7)/.3,rx2=lerp(-20,bx+8,eOut(t));circ(rx2,G-11,11,C.wood,C.ink,2);}
+  person(rx+34,G,rx+4,ry-3,C.ink,-6);
+  txt('G = 1 500 N',bx,by-82,{align:'center',col:C.force,weight:600});
+  arrow(bx,by,bx,by+52,C.force,null);
+  arrow(rx,ry-76,rx,ry-8,C.force,r?`F = ${fmt(r.F)} N`:'F ≤ 400 N',{lx:rx-10,ly:ry-64,align:'right'});
+  dim(lx,fx,G+38,`k₁ = ${fmt(xf,2)} m`);dim(fx,rx,G+38,`k₂ = ${fmt(4-xf,2)} m`);
+  txt('forgáspont',fx,G+64,{align:'center',size:12,col:C.muted});
+  if(r&&p>.6)txt(`emelés: ${fmt(r.lift*100,1)} cm`,bx+80,by-20,{col:r.liftOk?C.ok:C.bad,weight:600});}
+},
+/* 2 — ramp */
+{era:'Ókori Egyiptom',year:'Kr. e. 2560 k.',place:'Gíza',principle:'Lejtő és súrlódás',title:'A piramis rámpája',
+ story:'Gízában Hufu fáraó piramisán dolgoztok. Egy 2,5 tonnás mészkőtömböt kell szánon felhúzni a 10 méter magasan lévő építési szintre. A rámpa nem érhet bele a csatornába, amely 55 méterre van a piramis falától.',
+ task:'Állítsd be a rámpa dőlésszögét, és döntsd el, öntözzétek-e a homokot a szán előtt.',
+ data:[['A kőtömb súlya','G = 25 000 N'],['40 munkás, fejenként 300 N','F ≤ 12 000 N'],['Emelési magasság','h = 10 m'],['Hely a csatornáig','≤ 55 m vízszintesen'],['Súrlódás száraz homokon','μ ≈ 0,5'],['Súrlódás nedves homokon','μ ≈ 0,25']],
+ hint:'Lejtőn felfelé húzva: F = G·(sin α + μ·cos α). A rámpa vízszintes hossza 10 m / tg α. Keress olyan szöget, ahol mindkét feltétel teljesül, és nézd meg, melyik μ-vel van ilyen.',
+ formula:'F = G · (sin α + μ · cos α)',
+ learned:'A lejtő a súlyerőt két összetevőre bontja: a lejtővel párhuzamos G·sin α-ra és a rá merőleges G·cos α-ra. Ez utóbbi szabja meg a súrlódást. Djehutihotep sírjának egy falfestményén (Kr. e. 19. sz. körül) valaki vizet önt egy óriási szobrot szállító szán elé. Egy 2014-es amszterdami kísérlet szerint a megfelelően nedvesített homokon nagyjából feleakkora erő kell a húzáshoz.',
+ init:()=>({a:20,wet:false}),
+ controls(s,ui){ui.slider({id:'a',label:'A rámpa dőlésszöge, α',min:5,max:30,step:1,value:s.a,unit:'°',dec:0,on:v=>s.a=v});ui.toggle({id:'wet',label:'Vizet öntünk a szán elé',value:s.wet,on:v=>s.wet=v});},
+ evaluate(s){const a=rad(s.a),mu=s.wet?.25:.5,F=25000*(Math.sin(a)+mu*Math.cos(a)),run=10/Math.tan(a),L=10/Math.sin(a),fitOk=run<=55+1e-6,forceOk=F<=12000;let msg;
+  if(!fitOk)msg=`A rámpa vízszintes hossza ${fmt(run,1)} m lenne, de csak 55 m hely van a csatornáig. Meredekebb rámpa kell.`;
+  else if(!forceOk)msg=`A tömb nem mozdul: ${fmt(F)} N húzóerő kellene, a 40 munkás együtt csak 12 000 N-t bír.`+(s.wet?'':' A súrlódáson is lehet csökkenteni.');
+  else msg=`Felért! ${fmt(F)} N húzóerő elég volt, a rámpa ${fmt(L,1)} m hosszú.`;
+  return{ok:fitOk&&forceOk,fitOk,forceOk,F,run,msg,rows:[['Vízszintes hossz',fmt(run,1)+' m','≤ 55 m',fitOk],['Húzóerő (μ = '+(s.wet?'0,25':'0,5')+')',fmt(F)+' N','≤ 12 000 N',forceOk]]};},
+ draw(s,p,r){bg();const G=410,topX=610,h=100,canalX=topX-550;const a=rad(s.a),run=h/Math.tan(a),footX=topX-run,Lp=h/Math.sin(a);
+  rect(0,G+3,canalX,H-G,C.water,null);for(let y=G+20;y<H;y+=18)ln(6,y,canalX-6,y,C.paper,1.5,[8,7]);
+  ground(G,canalX,W);ln(canalX,G,canalX,H,C.ink,2);txt('csatorna',6,G+30,{size:11,col:C.ink});
+  ln(topX-40,G,W,G-(W-topX+40)*1.27,C.muted,1.5,[7,6]);txt('a kész piramis vonala',W-14,120,{align:'right',size:12,col:C.muted});
+  poly([[topX-12,G],[topX,G-h],[W,G-h],[W,G]],C.stone,C.ink,1.5);for(let y=G-12;y>G-h;y-=12)ln(topX-12+(G-y)/h*12,y,W,y,C.muted,1);
+  poly([[footX,G],[topX,G-h],[topX,G]],C.sand,C.ink,1.5);
+  if(footX<canalX){ctx.save();ctx.beginPath();ctx.rect(0,0,canalX,H);ctx.clip();ctx.globalAlpha=.55;poly([[footX,G],[topX,G-h],[topX,G]],C.bad,null);ctx.restore();txt('a rámpa a csatornába lóg!',canalX+10,G+28,{col:C.bad,weight:600,size:13});}
+  if(s.wet){ctx.save();ctx.globalAlpha=.8;ln(footX+(Math.max(canalX,footX)-footX),G-(Math.max(canalX,footX)-footX)*Math.tan(a)-2,topX,G-h-2,C.water,5);ctx.restore();}
+  if(footX>canalX-4)arcLbl(footX,G,50,0,-a,'α',footX+58,G-12);
+  const visX=Math.max(footX,canalX)+34,d0=(visX-footX)/Math.cos(a);let d=d0;
+  if(r){if(r.ok)d=d0+(Lp-d0+40)*eIO(p);else if(r.fitOk)d=d0+3*Math.sin(p*40)*(1-p);}
+  const pos=t=>t<=Lp?[footX+t*Math.cos(a),G-t*Math.sin(a),a]:[topX+(t-Lp),G-h,0];
+  const[bx,by,ba]=pos(d);ctx.save();ctx.translate(bx,by);ctx.rotate(-ba);rect(-26,-6,52,6,C.wood,C.ink,1.5);rect(-21,-34,42,28,C.marble,C.ink,1.8);ctx.restore();
+  const rope=[[bx+Math.cos(ba)*22-Math.sin(ba)*20,by-Math.sin(ba)*22-Math.cos(ba)*20]];
+  if(s.wet){const[px,py]=pos(d+34);person(px,py,px-12,py-34,C.ink,-2);circ(px-14,py-32,6,C.wood,C.ink,1.2);for(let i=0;i<3;i++)circ(px-18-i*3,py-22+i*7,1.8,C.water,null);}
+  for(let i=0;i<4;i++){const[wx,wy]=pos(d+(s.wet?66:46)+i*30);const lean=r&&!r.forceOk&&r.fitOk?-12:-6;person(wx,wy,wx-14+lean,wy-40,C.ink,lean);rope.push([wx-14+lean,wy-40]);}
+  ctx.save();ctx.strokeStyle=C.wood;ctx.lineWidth=2;ctx.beginPath();rope.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.stroke();ctx.restore();
+  if(r){const cx=bx-Math.sin(ba)*20,cy=by-Math.cos(ba)*20;arrow(cx,cy,cx,cy+62,C.force,'G',{lx:cx+8,ly:cy+54});if(r.fitOk)arrow(cx-Math.cos(ba)*40,cy+Math.sin(ba)*40,cx-Math.cos(ba)*4,cy+Math.sin(ba)*4,C.force,`F = ${fmt(r.F)} N`,{lx:cx-30,ly:cy-48,align:'right'});}
+  dim(canalX,topX,G+60,'55 m hely');vdim(topX+16,G,G-h,'10 m');
+  txt(`α = ${s.a}°   vízszintes hossz: ${fmt(run/10,1)} m   rámpa: ${fmt(Lp/10,1)} m`,16,24,{size:13});}
+},
+/* 3 — balance */
+{era:'Ókori Görögország',year:'Kr. e. 3. sz.',place:'Szirakúza',principle:'Nyomatéki egyensúly',title:'Archimédész mérlege',
+ story:'Szirakúzában Archimédész a tanítványainak mutatja be, mikor van egyensúlyban egy mérleg. A bal karra már felakasztott két súlyt: 30 N-t a 4-es és 20 N-t az 5-ös kampóra.',
+ task:'Akassz fel súlyokat a jobb kar kampóira úgy, hogy a mérleg a rögzítő támaszok elengedése után vízszintes maradjon.',
+ data:[['Bal kar','30 N a 4-es, 20 N az 5-ös kampón'],['Választható súlyok','10 N, 20 N, 40 N, 50 N'],['Kampók','egyenlő közönként, 1–5'],['Szabály','egy kampóra legfeljebb egy súly']],
+ hint:'A forgatónyomaték itt súly × kampószám. A bal oldalon: 30·4 + 20·5 = 220. A jobb oldalon is pontosan 220-at kell kiraknod.',
+ formula:'Σ G·k (bal) = Σ G·k (jobb)',
+ learned:'Archimédész A síkidomok egyensúlyáról című művében mértani úton bizonyította, hogy két súly akkor van egyensúlyban, ha a forgásponttól mért távolságuk fordítottan arányos a súlyukkal. A hagyomány neki tulajdonítja a mondást: „Adjatok egy szilárd pontot, és kimozdítom a Földet.”',
+ init:()=>({place:{10:0,20:0,40:0,50:0}}),
+ controls(s,ui){ui.note('Melyik jobb oldali kampóra kerüljön az egyes súly? (– = nem használod)');[10,20,40,50].forEach(w=>ui.segmented({id:'w'+w,label:w+' N',options:[0,1,2,3,4,5].map(v=>({v,t:v?String(v):'–'})),value:s.place[w],rerender:true,on:v=>{if(v)for(const k in s.place)if(+k!==w&&s.place[k]===v)s.place[k]=0;s.place[w]=v;}}));},
+ evaluate(s){let R=0;for(const w in s.place)R+=w*s.place[w];const ok=R===220,diff=R-220;let msg;
+  if(R===0)msg='Még egyetlen súlyt sem akasztottál fel, így a bal oldal lebillent.';
+  else if(R<220)msg=`A bal oldal lebillent: a bal oldali nyomaték 220, a jobb oldali csak ${R}.`;
+  else if(R>220)msg=`A jobb oldal lebillent: a jobb oldali nyomaték ${R}, több, mint 220.`;
+  else msg='Tökéletes egyensúly: 220 = 220. A mérleg vízszintes maradt.';
+  return{ok,R,target:clamp(diff/60,-1,1)*.2,msg,rows:[['Bal: 30·4 + 20·5','220','',true],['Jobb: Σ súly·kampó',String(R),'= 220',ok]]};},
+ draw(s,p,r){bg();const G=440,PX=400,PY=190;ground(G);let phi=0;if(r)phi=r.ok?.035*Math.sin(p*16)*(1-p):r.target*eBack(p);
+  const R=(x,y)=>[PX+x*Math.cos(phi)-y*Math.sin(phi),PY+x*Math.sin(phi)+y*Math.cos(phi)];
+  poly([[PX-8,PY+6],[PX+8,PY+6],[PX+30,G],[PX-30,G]],C.wood,C.ink,1.5);
+  if(!r){[-1,1].forEach(g=>{const x=PX+g*320;ln(x,G,x,PY+12,C.muted,3,[6,5]);rect(x-14,PY+7,28,6,C.fill,C.ink,1);});txt('rögzítő támaszok – a próbánál eltűnnek',PX,G+28,{align:'center',size:12,col:C.muted});}
+  const a=R(-340,0),b=R(340,0);ln(a[0],a[1],b[0],b[1],C.ink,12);ln(a[0],a[1],b[0],b[1],C.wood,9);
+  poly([[PX,PY-1],[PX-10,PY+13],[PX+10,PY+13]],C.ink,null);
+  for(const g of[-1,1])for(let k=1;k<=5;k++){const[x,y]=R(g*k*64,0);circ(x,y,3.5,C.paper,C.ink,1.5);const[lx,ly]=R(g*k*64,-18);txt(String(k),lx,ly,{align:'center',size:12,col:C.muted});}
+  const hang=(w,k,g,fill)=>{const[x,y]=R(g*k*64,4),bw=22+w*.55,bh=20+w*.35,sy=y+40;ln(x,y,x,sy,C.ink,1.5);rect(x-bw/2,sy,bw,bh,fill,C.ink,1.5);txt(w+' N',x,sy+bh/2,{align:'center',size:12,weight:600});};
+  hang(30,4,-1,C.stone);hang(20,5,-1,C.stone);for(const w of[10,20,40,50])if(s.place[w])hang(w,s.place[w],1,C.marble);
+  txt('bal kar',PX-200,PY-60,{align:'center',size:12,col:C.muted});txt('jobb kar',PX+200,PY-60,{align:'center',size:12,col:C.muted});
+  if(r&&p>.5){txt('Σ bal = 220',24,30,{weight:600});txt(`Σ jobb = ${r.R}`,W-24,30,{align:'right',weight:600,col:r.ok?C.ok:C.bad});}}
+},
+/* 4 — pulley */
+{era:'Római Birodalom',year:'Kr. e. 1. sz.',place:'Róma',principle:'Csigasor',title:'Római emelődaru',
+ story:'Rómában templom épül. Egy 1,2 tonnás márvány oszlopdobot kell 12 méter magasra emelni egy kétlábú fadaruval. A kötelet két munkás húzza egy csörlővel.',
+ task:'Döntsd el, hány kötélágon függjön az alsó, mozgó csigasor.',
+ data:[['Az oszlopdob súlya','G = 12 000 N'],['Két munkás legnagyobb húzóereje','F ≤ 2 600 N'],['Emelési magasság','h = 12 m'],['Rendelkezésre álló kötél','70 m'],['Kötél a darutól a csörlőig','+10 m']],
+ hint:'Ha n kötélág tartja a terhet, mindegyikben G/n erő ébred, így F = G/n. A teher 12 m-es emeléséhez viszont n·12 m kötelet kell áthúzni, és még 10 m kell a csörlőig.',
+ formula:'F = G / n,   s = n · h',
+ learned:'A csigasor ugyanazt az alkut köti, mint az emelő: az erő n-ed részére csökken, a kötelet viszont n-szer hosszabban kell húzni. Vitruvius a De architectura X. könyvében leírja a háromcsigás trispastost és az ötcsigás pentaspastost. Most épp ez utóbbit építetted meg. A még nagyobb terhekhez a rómaiak taposókereket is használtak.',
+ init:()=>({n:2}),
+ controls(s,ui){const names={1:'egyetlen kötél, mozgó csiga nélkül',2:'egy mozgó csiga',3:'trispastos (három csiga)',4:'négy kötélág',5:'pentaspastos (öt csiga)',6:'polyspastos (sok csiga)',7:'polyspastos (sok csiga)',8:'polyspastos (sok csiga)'};ui.stepper({id:'n',label:'Tartó kötélágak száma, n',min:1,max:8,value:s.n,describe:v=>names[v],on:v=>s.n=v});},
+ evaluate(s){const n=s.n,F=12000/n,need=n*12+10,forceOk=F<=2600,ropeOk=need<=70,frac=Math.min(1,60/(n*12));let msg;
+  if(!forceOk)msg=`Túl nehéz: ${n} kötélággal ${fmt(F)} N húzóerő kellene, a két munkás csak 2 600 N-t bír.`;
+  else if(!ropeOk)msg=`Erővel bírnák, de ${need} m kötél kellene, és csak 70 m van. A kő ${fmt(12*frac,1)} m magasan elakad.`;
+  else msg=`Fent van! ${fmt(F)} N húzóerő és ${need} m kötél volt hozzá.`;
+  return{ok:forceOk&&ropeOk,forceOk,ropeOk,frac,F,msg,rows:[['Húzóerő, G/n',fmt(F)+' N','≤ 2 600 N',forceOk],['Kötél, n·12 + 10',need+' m','≤ 70 m',ropeOk]]};},
+ draw(s,p,r){bg();const G=450,n=s.n;ground(G);
+  ln(400,62,110,G,C.muted,1.5,[6,5]);rect(100,G-8,18,8,C.wood,C.ink,1);
+  ln(342,G,400,58,C.wood,9);ln(458,G,400,58,C.wood,9);ln(352,G,400,58,C.ink,1);
+  let lf=0;if(r&&r.forceOk)lf=r.ropeOk?eIO(p):Math.min(eIO(p),r.frac);
+  const lift=lf*230,stoneBot=G-lift,stoneTop=stoneBot-56,botY=stoneTop-36,bw=Math.max(26,n*9+14);
+  rect(400-bw/2,72,bw,16,C.wood,C.ink,1.5);
+  const xs=[];for(let i=0;i<n;i++)xs.push(400-(n-1)*4.5+i*9);
+  for(let i=0;i<Math.ceil(n/2);i++)circ(400-(Math.ceil(n/2)-1)*7+i*14,80,5,C.paper,C.ink,1.2);
+  xs.forEach(x=>ln(x,88,x,n>1?botY:botY+14,C.ink,1.6));
+  if(n>1){rect(400-bw/2,botY,bw,14,C.wood,C.ink,1.5);for(let i=0;i<Math.floor(n/2);i++)circ(400-(Math.floor(n/2)-1)*7+i*14,botY+7,4.5,C.paper,C.ink,1.2);}
+  ln(400,botY+14,400,stoneTop-12,C.ink,2);ln(400,stoneTop-12,362,stoneTop,C.ink,1.5);ln(400,stoneTop-12,438,stoneTop,C.ink,1.5);
+  rect(355,stoneTop,90,56,C.marble,C.ink,1.8);ctx.save();ctx.strokeStyle=C.muted;ctx.lineWidth=1;for(let x=365;x<445;x+=14){ctx.beginPath();ctx.moveTo(x,stoneTop+2);ctx.lineTo(x,stoneTop+54);ctx.stroke();}ctx.restore();
+  const fxTop=400+bw/2-4;ln(fxTop,80,456,G-44,C.ink,1.6);circ(456,G-44,6,C.paper,C.ink,1.5);ln(456,G-50,610,G-58,C.ink,1.6);
+  ln(590,G,598,G-58,C.wood,5);ln(630,G,622,G-58,C.wood,5);const wa=lift*.08;circ(610,G-58,13,C.wood,C.ink,1.5);
+  for(let k=0;k<4;k++){const aa=wa+k*Math.PI/2;ln(610,G-58,610+Math.cos(aa)*30,G-58+Math.sin(aa)*30,C.wood,3);}
+  const slip=r&&!r.forceOk?Math.sin(p*30)*4*(1-p):0;person(570+slip,G,586+slip,G-62,C.ink,-8);person(652-slip,G,636-slip,G-56,C.ink,8);
+  const name={3:'trispastos',5:'pentaspastos'}[n];txt(`${n} tartó kötélág${name?' · '+name:''}`,400+bw/2+14,62,{size:13,weight:600});
+  if(r){arrow(400,stoneTop+28,400,stoneTop+92,C.force,'G = 12 000 N',{lx:410,ly:stoneTop+84});arrow(560,G-120,598,G-80,C.force,`F = ${fmt(r.F)} N`,{lx:552,ly:G-130,align:'right'});}
+  vdim(500,G,G-230,'12 m (rajzon kicsinyítve)');}
+},
+/* 5 — Pisa */
+{era:'Középkor',year:'1178',place:'Pisa',principle:'Állékonyság',title:'A pisai torony',
+ story:'Pisában 1173-ban kezdték építeni a harangtornyot. 1178-ban, a harmadik emelet elkészülte után a puha talajon dőlni kezdett. A mesterek azon vitatkoznak: meddig dőlhet egy torony, mielőtt feldől?',
+ task:'Állítsd be a legnagyobb dőlésszöget, amelynél a kész, 56 méteres torony még nem borul fel. Legfeljebb 1,5°-kal maradhatsz el a határtól.',
+ data:[['Magasság','h ≈ 56 m'],['Alap átmérője','≈ 15,5 m (r = 7,75 m)'],['Súlypont','a tengelyen, h/2 = 28 m magasan'],['Billenés','a lejtős oldali alapél körül'],['Tűrés','legfeljebb 1,5°-kal a határ alatt']],
+ hint:'A torony addig áll, amíg a súlypontjából húzott függőleges a billenőél előtt metszi a talajt. A határhelyzetben a súlypont pontosan a billenőél fölött van: tg α = r / (h/2).',
+ formula:'tg α_határ = r / (h/2)',
+ learned:'Az állékonyság feltétele, hogy a súlyerő hatásvonala a támaszfelületen belül maradjon. A valódi torony dőlése 1990-re kb. 5,5° lett, ezért bezárták. 1990 és 2001 között az északi oldal alól óvatosan talajt termeltek ki, így ma nagyjából 4°-ban áll. A ~15,5° csak a merev test elméleti határa: a valóságban a talaj és a falazat jóval előbb tönkremenne.',
+ init:()=>({a:5.5}),
+ controls(s,ui){ui.slider({id:'a',label:'Dőlésszög, α',min:0,max:25,step:.5,value:s.a,unit:'°',dec:1,on:v=>s.a=v});},
+ evaluate(s){const crit=deg(Math.atan(7.75/28)),a=rad(s.a),off=-7.75*Math.cos(a)+28*Math.sin(a),tipped=s.a>crit,close=s.a>=crit-1.5;let msg;
+  if(tipped)msg=`Felborult! ${fmt(s.a,1)}°-nál a súlypont függőlegese ${fmt(off,2)} m-rel a billenőélen túlra esik.`;
+  else if(!close)msg=`Áll, de nagyobb dőlést is kibírna: a súlypont függőlegese még ${fmt(-off,2)} m-re van a billenőéltől.`;
+  else msg=`Áll, és nagyon közel jársz a határhoz: a súlypont függőlegese csak ${fmt(-off,2)} m-re van a billenőéltől. Az elméleti határ ${fmt(crit,1)}°.`;
+  return{ok:!tipped&&close,tipped,crit,off,msg,rows:[['Súlypont vízszintes távolsága a billenőéltől',(tipped?'túl rajta ':'')+fmt(Math.abs(off),2)+' m','',!tipped],['Eltérés a határtól',fmt(Math.abs(crit-s.a),1)+'°','≤ 1,5° alatta',!tipped&&close]]};},
+ draw(s,p,r){bg();const G=440,S=6,rr=7.75*S,hh=56*S,pvX=400+rr,pvY=G;let ang=s.a;
+  if(r&&r.tipped&&p>.45)ang=s.a+(90-s.a)*eIn((p-.45)/.55);
+  ln(pvX,G,pvX,G-170,C.muted,1.2,[5,5]);
+  ctx.save();ctx.translate(pvX,pvY);ctx.rotate(rad(ang));const w=2*rr;
+  rect(-w,-hh*.82,w,hh*.82,C.marble,C.ink,1.8);
+  const fr=[.19,.105,.105,.105,.105,.105,.105];let y=0;
+  fr.forEach((f,i)=>{const yb=y,yt=y-f*hh;ln(-w,yt,0,yt,C.ink,1.2);const cnt=i===0?3:6,ar=w/(cnt*2.6),ah=f*hh*(i===0?.45:.32);
+    ctx.save();ctx.strokeStyle=C.muted;ctx.lineWidth=1.1;for(let k=0;k<cnt;k++){const cx=-w+(k+.5)*w/cnt;ctx.beginPath();ctx.moveTo(cx-ar,yb-3);ctx.lineTo(cx-ar,yb-3-ah);ctx.arc(cx,yb-3-ah,ar,Math.PI,0);ctx.lineTo(cx+ar,yb-3);ctx.stroke();}ctx.restore();y=yt;});
+  const bw2=w*.72;rect(-w/2-bw2/2,-hh,bw2,hh*.18,C.marble,C.ink,1.8);
+  ctx.save();ctx.strokeStyle=C.muted;ctx.lineWidth=1.1;for(let k=0;k<4;k++){const cx=-w/2-bw2/2+(k+.5)*bw2/4;ctx.beginPath();ctx.arc(cx,-hh+hh*.11,bw2/12,Math.PI,0);ctx.stroke();}ctx.restore();
+  ctx.restore();
+  rect(0,G,W,H-G,C.sand,null);ground(G);
+  if(ang<60){arcLbl(pvX,G,70,-Math.PI/2,-Math.PI/2+rad(ang),null);txt(`α = ${fmt(s.a,1)}°`,pvX+18,G-88,{weight:600});}
+  circ(pvX,G,5,C.ink,null);txt('billenőél',pvX+10,G+22,{size:12,col:C.muted});
+  if(r&&ang<85){const ar=rad(ang),gx=pvX-rr*Math.cos(ar)+hh/2*Math.sin(ar),gy=G-rr*Math.sin(ar)-hh/2*Math.cos(ar);
+    const sh=Math.min(1,p/.4);ln(gx,gy,gx,lerp(gy,G,sh),r.tipped?C.bad:C.ok,1.6,[6,4]);
+    circ(gx,gy,7,C.paper,C.ink,2);ctx.save();ctx.fillStyle=C.ink;ctx.beginPath();ctx.moveTo(gx,gy);ctx.arc(gx,gy,7,-Math.PI/2,0);ctx.lineTo(gx,gy);ctx.arc(gx,gy,7,Math.PI/2,Math.PI);ctx.fill();ctx.restore();
+    arrow(gx,gy+8,gx,gy+70,C.force,'G',{lx:gx-14,ly:gy+60,align:'right'});txt('súlypont',gx-12,gy-14,{align:'right',size:12});
+    if(sh>=1&&ang<=s.a+.01){ln(Math.min(gx,pvX),G+40,Math.max(gx,pvX),G+40,r.tipped?C.bad:C.ok,3);txt(`${fmt(Math.abs(r.off),2)} m`,(gx+pvX)/2,G+58,{align:'center',weight:600,col:r.tipped?C.bad:C.ok});}}
+  txt('h = 56 m, r = 7,75 m',20,26,{size:13});}
+},
+/* 6 — chandelier */
+{era:'Kora újkor',year:'1586',place:'Németalföld',principle:'Erők felbontása',title:'A templom csillárja',
+ story:'Simon Stevin flamand mérnök 1586-ban megjelent könyvében megmutatta, hogyan bontható fel egy erő két irányra. Egy németalföldi templomban 400 kg-os csillárt kell két egyforma kötéllel a pillérek közé függeszteni.',
+ task:'Válaszd meg a kötelek hosszát: ne szakadjanak el, de a csillár se lógjon olyan mélyre, hogy a körmenet zászlói beleakadjanak.',
+ data:[['A csillár súlya','G = 4 000 N'],['Pillérek távolsága','10 m (fele: 5 m)'],['Rögzítési pontok','14 m magasan'],['Egy kötél teherbírása','T ≤ 3 200 N'],['A csillár magassága','1 m'],['A csillár alja','≥ 7,5 m a padló fölött']],
+ hint:'Ha a kötél a függőlegessel θ szöget zár be: 2·T·cos θ = G. A belógás d = √(L² − 5²), és cos θ = d / L. A csillár alja 14 − d − 1 méter magasan van.',
+ formula:'2 · T · cos θ = G',
+ learned:'Minél laposabban feszül a kötél, annál nagyobb erő ébred benne: vízszintes kötéllel semmilyen csillárt nem lehetne megtartani. Stevin könyvének címlapján egy lejtőre vetett, zárt láncgyűrű látható. Ebből a gondolatkísérletből vezette le a lejtő törvényét: ha a lánc magától körbeforogna, örökmozgó volna, ami lehetetlen.',
+ init:()=>({L:5.6}),
+ controls(s,ui){ui.slider({id:'L',label:'Egy kötél hossza, L',min:5.2,max:9,step:.1,value:s.L,unit:'m',dec:1,on:v=>s.L=v});},
+ evaluate(s){const L=s.L,d=Math.sqrt(L*L-25),cs=d/L,T=4000/(2*cs),bottom=13-d,strong=T<=3200,high=bottom>=7.5-1e-6;let msg;
+  if(!strong)msg=`A kötél elszakadt: ${fmt(T)} N ébredne benne, de csak 3 200 N-t bír. Túl laposan feszül.`;
+  else if(!high)msg=`A kötelek bírják, de a csillár alja csak ${fmt(bottom,2)} m magasan van, és a körmenet zászlói beleakadnak.`;
+  else msg=`Biztonságosan függ: a kötélerő ${fmt(T)} N, a csillár alja ${fmt(bottom,2)} m magasan van.`;
+  return{ok:strong&&high,strong,high,T,d,bottom,theta:deg(Math.acos(cs)),msg,rows:[['Kötélerő, T',fmt(T)+' N','≤ 3 200 N',strong],['A csillár alja',fmt(bottom,2)+' m','≥ 7,5 m',high],['Szög a függőlegestől, θ',fmt(deg(Math.acos(cs)),1)+'°','',true]]};},
+ draw(s,p,r){bg();const G=460,S=28,AY=G-14*S,xL=260,xR=540,d=Math.sqrt(s.L*s.L-25);let hy=AY+d*S;
+  ctx.save();ctx.strokeStyle=C.ink;ctx.lineWidth=3;ctx.beginPath();ctx.arc(xR,AY,280,Math.PI,Math.PI*4/3);ctx.stroke();ctx.beginPath();ctx.arc(xL,AY,280,-Math.PI/3,0);ctx.stroke();ctx.lineWidth=1.2;ctx.strokeStyle=C.muted;ctx.beginPath();ctx.arc(xR,AY,262,Math.PI,Math.PI*4/3);ctx.stroke();ctx.beginPath();ctx.arc(xL,AY,262,-Math.PI/3,0);ctx.stroke();ctx.restore();
+  rect(xL-30,0,30,G,C.stone,C.ink,1.5);rect(xR,0,30,G,C.stone,C.ink,1.5);
+  ground(G);
+  const clear=G-7.5*S;ln(xL+4,clear,xR-4,clear,C.muted,1.3,[6,5]);txt('7,5 m',xL+8,clear-12,{size:12,col:C.muted});
+  vdim(600,G,AY,'14 m');
+  const broke=r&&!r.strong&&p>.25;
+  if(broke){const t=(p-.25)/.75;hy=lerp(hy,G-30,eIn(t));const sw=Math.sin(p*12)*10*(1-t);ln(xL,AY,xL+18+sw,AY+70,C.wood,2.5);ln(xR,AY,xR-18-sw,AY+70,C.wood,2.5);}
+  else{ln(xL,AY,400,hy,C.wood,2.5);ln(xR,AY,400,hy,C.wood,2.5);}
+  circ(xL,AY,6,null,C.ink,2);circ(xR,AY,6,null,C.ink,2);
+  const lit=r&&r.ok;let flash=false;
+  let b1=120,b2=690;
+  if(r&&r.strong){if(r.high){b1=lerp(-80,860,p);b2=b1-110;}else{const t=Math.min(1,p/.75);b1=lerp(-80,330,eIO(t));b2=b1-110;flash=p>.75;}}
+  const ban=x=>{ln(x,G,x,clear,C.wood,3);ln(x-10,clear+10,x+10,clear+10,C.wood,3);rect(x+2,clear+16,32,44,C.compress,C.ink,1);person(x-14,G,x-2,G-58,C.ink,0);};
+  ban(b1);ban(b2);
+  const chand=(x,y)=>{ln(x,y,x,y+10,C.ink,2);ln(x,y+10,x-46,y+21,C.ink,1.2);ln(x,y+10,x+46,y+21,C.ink,1.2);
+    ctx.save();ctx.strokeStyle=flash?C.bad:C.wood;ctx.lineWidth=4;ctx.beginPath();ctx.ellipse(x,y+22,46,8,0,0,Math.PI*2);ctx.stroke();ctx.restore();
+    for(const i of[-36,-18,0,18,36]){rect(x+i-2.5,y+8,5,12,C.marble,C.ink,1);if(lit){ctx.save();ctx.fillStyle=C.compress;ctx.beginPath();ctx.ellipse(x+i,y+3,2.6,5,0,0,Math.PI*2);ctx.fill();ctx.restore();}}
+    poly([[x-9,y+28],[x+9,y+28],[x,y+30]],C.wood,C.ink,1);};
+  chand(400,hy);
+  if(r&&!broke&&p>.15){const k=1/30;[[xL,AY],[xR,AY]].forEach(([ax,ay],i)=>{const dx=ax-400,dy=ay-hy,l=Math.hypot(dx,dy),len=r.T*k;arrow(400,hy,400+dx/l*len,hy+dy/l*len,r.strong?C.force:C.bad,i?`T = ${fmt(r.T)} N`:null,{lx:400+dx/l*len+10,ly:hy+dy/l*len+6});});arrow(400,hy,400,hy+4000*k,C.force,'G = 4 000 N',{lx:410,ly:hy+4000*k-6});
+    if(r.strong)arcLbl(400,hy,40,-Math.PI/2-rad(r.theta),-Math.PI/2,'θ',384,hy-54);}
+  txt(`L = ${fmt(s.L,1)} m   belógás d = ${fmt(d,2)} m`,16,24,{size:13});}
+},
+/* 7 — truss */
+{era:'Ipari forradalom',year:'1847',place:'Egyesült Államok',principle:'Csomóponti módszer',title:'Vasúti rácsos híd',
+ story:'Az 1840-es években robbanásszerűen épülnek a vasutak. Squire Whipple amerikai mérnök 1847-ben kiadott könyvében az elsők között mutatta meg, hogyan számolható ki egy rácsos tartó minden rúdjának ereje. Egy kis híd közepére, a B csomópont fölé 100 kN-os mozdony gördül.',
+ task:'Jelöld meg minden rúdról, hogy húzott (megnyúlna) vagy nyomott (összenyomódna).',
+ data:[['Támaszköz','10 m (A–C)'],['Magasság','4 m (B–D)'],['Teher','Q = 100 kN a B csomópontban'],['Támaszok','A: csukló, C: görgő']],
+ hint:'Gondolatban vágd ki a B csomópontot: a teher lefelé húzza, a vízszintes AB és BC rúd ebben nem segíthet, ezért BD-nek fölfelé kell húznia. Ezután nézd a D csomópontot: mit kell tennie a két ferde rúdnak, hogy egyensúlyban tartsa BD húzását?',
+ formula:'Minden csomópontban: ΣFx = 0 és ΣFy = 0',
+ learned:'Ez a csomóponti módszer. A támaszerő A-nál és C-nél is 50 kN. A ferde AD és DC rúdban 80 kN nyomás, az alsó AB és BC rúdban 62,5 kN húzás, a függőleges BD-ben 100 kN húzás ébred. A húzott rudak lehetnek vékonyak, akár kötelek is, a nyomottakat viszont a kihajlás ellen erősebbre kell méretezni.',
+ init:()=>({m:{AB:null,BC:null,AD:null,DC:null,BD:null}}),
+ controls(s,ui){TRUSS.members.forEach(([n,,,desc])=>ui.segmented({id:'m'+n,label:`${n} · ${desc}`,options:[{v:'T',t:'Húzott',cls:'t'},{v:'C',t:'Nyomott',cls:'c'}],value:s.m[n],rerender:true,on:v=>s.m[n]=v}));},
+ evaluate(s){const miss=TRUSS.members.map(m=>m[0]).filter(n=>!s.m[n]);const wrong=TRUSS.members.map(m=>m[0]).filter(n=>s.m[n]&&s.m[n]!==TRUSS.answer[n]);const ok=!miss.length&&!wrong.length;let msg;
+  if(miss.length)msg=`Még nem jelölted meg: ${miss.join(', ')}. A híd csak akkor bírja, ha minden rudat jól méretezel.`;
+  else if(wrong.length)msg=`A híd megroggyant. ${wrong.length} rúd rosszul van méretezve; ezek pirosan villognak a rajzon.`;
+  else msg='A híd megtartja a mozdonyt. Minden rúd jó szerepet kapott.';
+  const word={T:'húzott',C:'nyomott'};
+  const rows=ok?TRUSS.members.map(([n])=>[n,`${fmt(TRUSS.force[n],1).replace(',0','')} kN`,TRUSS.answer[n]==='T'?'húzás':'nyomás',true]):TRUSS.members.map(([n])=>[n,s.m[n]?word[s.m[n]]:'–','',!!s.m[n]&&s.m[n]===TRUSS.answer[n]]);
+  return{ok,wrong:wrong.concat(miss),msg,rows};},
+ draw(s,p,r){bg();const N=TRUSS.nodes;let dy=r?(r.ok?6:14)*eOut(p):0;const P={A:N.A,C:N.C,B:[N.B[0],N.B[1]+dy],D:[N.D[0],N.D[1]+dy]};
+  rect(0,400,W,H-400,C.water,null);for(let y=418;y<H;y+=18)ln(180,y,620,y,C.paper,1.5,[10,8]);
+  poly([[0,352],[150,352],[178,H],[0,H]],C.stone,C.ink,1.5);poly([[W,352],[650,352],[622,H],[W,H]],C.stone,C.ink,1.5);
+  poly([[160,334],[145,350],[175,350]],C.fill,C.ink,1.5);poly([[640,334],[626,344],[654,344]],C.fill,C.ink,1.5);circ(632,348,4,C.fill,C.ink,1.2);circ(648,348,4,C.fill,C.ink,1.2);
+  ctx.save();ctx.globalAlpha=.9;const lx=P.B[0]-70,ly=P.B[1]-6;rect(lx,ly-34,110,30,C.fill,C.ink,1.2);rect(lx+80,ly-54,30,22,C.fill,C.ink,1.2);rect(lx+8,ly-46,12,14,C.ink,null);[lx+18,lx+50,lx+86].forEach(x=>circ(x,ly-2,7,C.paper,C.ink,1.5));ctx.restore();
+  const blink=r&&!r.ok&&Math.floor(p*10)%2===0;
+  TRUSS.members.forEach(([n,a,b])=>{const st=s.m[n];let col=st==='T'?C.tension:st==='C'?C.compress:C.muted;if(r&&!r.ok&&r.wrong.includes(n)&&(blink||p>=1))col=C.bad;
+    ln(P[a][0],P[a][1],P[b][0],P[b][1],col,st?7:4,st?null:[9,7]);
+    const mx=(P[a][0]+P[b][0])/2,my=(P[a][1]+P[b][1])/2,ox=n==='BD'?-26:0,oy=n==='BD'?40:(n[0]==='A'&&n!=='AB'?-14:(n==='DC'?-14:16));
+    txt(n,mx+ox,my+oy,{align:'center',size:13,weight:600,col});
+    if(r&&r.ok&&p>.6)txt(`${fmt(TRUSS.force[n],1).replace(',0','')} kN`,mx+(n==='BD'?36:0),my+(n==='BD'?0:(n.includes('D')?-34:36)),{align:n==='BD'?'left':'center',size:12,col});});
+  Object.entries(P).forEach(([k,[x,y]])=>{circ(x,y,6,C.paper,C.ink,2);txt(k,x+(k==='A'?-16:k==='C'?16:k==='D'?0:14),y+(k==='D'?-18:-14),{align:'center',size:14,weight:600});});
+  arrow(P.B[0],P.B[1]+8,P.B[0],P.B[1]+64,C.force,'Q = 100 kN',{lx:P.B[0]+10,ly:P.B[1]+58});
+  if(r&&r.ok&&p>.4){arrow(160,412,160,356,C.force,'50 kN',{lx:170,ly:396});arrow(640,412,640,356,C.force,'50 kN',{lx:650,ly:396});}
+  txt('húzott',20,26,{col:C.tension,weight:600,size:13});txt('nyomott',100,26,{col:C.compress,weight:600,size:13});txt('jelöletlen',196,26,{col:C.muted,size:13});}
+},
+/* 8 — tower crane */
+{era:'Modern kor',year:'1949',place:'Németország',principle:'Billenés és ellensúly',title:'Toronydaru',dur:5200,
+ story:'Hans Liebherr 1949-ben építette meg első, gyorsan felállítható toronydaruját, és az ilyen darukból a háború utáni újjáépítés jelképe lett. Most a te darudnak kell egymás után három terhet felemelnie.',
+ task:'Döntsd el, hány 15 kN-os betontömb kerüljön az ellensúlykarra. A darunak üresen és mindhárom teherrel is stabilnak kell maradnia.',
+ data:[['Ellensúlykar','10 m, tömbönként 15 kN'],['1. teher','20 kN, 30 m-en'],['2. teher','40 kN, 12 m-en'],['3. teher','10 kN, 45 m-en'],['A torony teherbírása','|M| ≤ 320 kN·m mindkét irányban']],
+ hint:'Az eredő nyomaték: M = Q·d − n·15 kN·10 m. Két szélső esetet nézz meg: az üres darut (M = −n·150) és a legnagyobb Q·d szorzatú terhet. Mindkettőben |M| ≤ 320 kN·m kell.',
+ formula:'|Q·d − Gₑ·kₑ| ≤ M_megengedett',
+ learned:'Az ellensúly nem a legnagyobb terhet egyenlíti ki, hanem nagyjából a felét. Így a daru üresen sem borul hátra, teljes terheléssel sem előre. Ezért van minden darun terhelési táblázat, amely megadja, mekkora kinyúlásnál mekkora teher emelhető.',
+ init:()=>({n:4}),
+ controls(s,ui){ui.stepper({id:'n',label:'Ellensúlytömbök száma, n',min:0,max:6,value:s.n,describe:v=>`${v*15} kN × 10 m = ${fmt(v*150)} kN·m`,on:v=>s.n=v});},
+ evaluate(s){const Ms=CRANE.map(st=>st.Q*st.d-s.n*150),fi=Ms.findIndex(m=>Math.abs(m)>320),ok=fi<0;let msg;
+  if(ok)msg=`Mind a négy helyzetben stabil maradt a daru. A legnagyobb kiegyensúlyozatlan nyomaték ${fmt(Math.max(...Ms.map(Math.abs)))} kN·m volt.`;
+  else if(fi===0)msg=`Már üresen hátrabillent: az ellensúly egymaga ${fmt(s.n*150)} kN·m nyomatékot ad, a torony csak 320-at bír.`;
+  else msg=Ms[fi]>0?`Előrebillent a ${fi}. tehernél: M = ${fmt(Ms[fi])} kN·m, ez több, mint 320.`:`Hátrabillent a ${fi}. tehernél: M = ${fmtS(Ms[fi])} kN·m.`;
+  return{ok,failIdx:ok?null:fi,Ms,msg,rows:CRANE.map((st,i)=>[st.label,fmtS(Ms[i])+' kN·m','|M| ≤ 320',Math.abs(Ms[i])<=320])};},
+ draw(s,p,r){bg();const G=470,S=9,MX=320,TY=120,n=s.n;let ci=0,loc=0;
+  if(r){const k=Math.min(3.9999,p*4);ci=Math.floor(k);loc=k-ci;if(r.failIdx!=null&&ci>r.failIdx){ci=r.failIdx;loc=1;}}
+  const M=r?r.Ms[ci]:-n*150;ground(G);
+  for(let i=1;i<=3;i++){if(r&&ci>=i)continue;const st=CRANE[i],x=MX+st.d*S,bw=30+st.Q*.8,bh=22+st.Q*.3;rect(x-bw/2,G-bh,bw,bh,C.fill,C.ink,1.5);txt(st.Q+' kN',x,G-bh/2,{align:'center',size:12,weight:600});txt(`${i}. · ${st.d} m`,Math.min(x,W-50),G+22,{align:'center',size:12,col:C.muted});}
+  let ang,pv=[MX,G];const tipping=r&&r.failIdx===ci&&loc>.35;
+  if(tipping){const t=eIn(Math.min(1,(loc-.35)/.65)),sg=M>0?1:-1;ang=sg*t*.55;pv=[MX+sg*44,G];}else ang=clamp(M/320,-1.4,1.4)*.03;
+  ctx.save();ctx.translate(pv[0],pv[1]);ctx.rotate(ang);ctx.translate(-pv[0],-pv[1]);
+  rect(MX-44,G-14,88,14,C.stone,C.ink,1.5);
+  rect(MX-12,TY,24,G-14-TY,null,C.ink,2);for(let y=TY;y<G-38;y+=24)ln(MX-12,y,MX+12,y+24,C.ink,1.1);
+  ln(MX-12,TY,MX,TY-44,C.ink,2);ln(MX+12,TY,MX,TY-44,C.ink,2);
+  const tip=MX+47*S;ln(MX,TY,tip,TY,C.ink,2.5);ln(MX+12,TY-14,tip-10,TY-4,C.ink,1.5);for(let x=MX+12;x<tip-20;x+=26){const yt=lerp(TY-14,TY-4,(x-MX-12)/(tip-MX-22));ln(x,TY,x+13,yt,C.ink,1);ln(x+13,yt,x+26,TY,C.ink,1);}
+  ln(MX,TY-44,MX+30*S,TY-12,C.muted,1.2);
+  const cx=MX-10*S;ln(MX,TY,cx-30,TY,C.ink,2.5);ln(MX,TY-44,cx-24,TY,C.muted,1.2);
+  for(let i=0;i<n;i++)rect(cx-24,TY+6+i*18,48,16,C.stone,C.ink,1.5);
+  rect(MX+12,TY+4,24,20,C.fill,C.ink,1.5);
+  if(r&&ci>=1){const st=CRANE[ci],tx=MX+st.d*S,bw=30+st.Q*.8,bh=22+st.Q*.3,lift=Math.min(1,loc/.3)*130,ly=G-bh-lift;rect(tx-11,TY-3,22,8,C.ink,null);ln(tx,TY+5,tx,ly,C.ink,1.2);rect(tx-bw/2,ly,bw,bh,C.fill,C.ink,1.5);txt(st.Q+' kN',tx,ly+bh/2,{align:'center',size:12,weight:600});}
+  ctx.restore();
+  if(!r)txt(`ellensúly: ${n} × 15 kN`,cx,TY+18+Math.max(n,1)*18,{align:'center',size:12,col:C.muted});
+  const gx=470,gw=300,gy=40,mp=v=>gx+gw/2+clamp(v,-480,480)/480*gw/2;
+  txt('kiegyensúlyozatlan nyomaték',gx,gy-16,{size:12,col:C.muted});
+  rect(gx,gy,gw,12,C.fill,null);ctx.save();ctx.globalAlpha=.45;rect(gx,gy,mp(-320)-gx,12,C.bad,null);rect(mp(320),gy,gx+gw-mp(320),12,C.bad,null);ctx.restore();rect(gx,gy,gw,12,null,C.ink,1);
+  [-320,0,320].forEach(v=>{ln(mp(v),gy+12,mp(v),gy+18,C.ink,1);txt(fmtS(v),mp(v),gy+28,{align:'center',size:11,col:C.muted});});
+  const nx=mp(M),bad=Math.abs(M)>320;poly([[nx,gy+13],[nx-7,gy-6],[nx+7,gy-6]],bad?C.bad:C.ink,null);
+  txt(`M = ${fmtS(M)} kN·m`,gx+gw,gy+48,{align:'right',weight:600,col:bad?C.bad:C.ink});
+  txt(`Helyzet: ${CRANE[ci].label}`,20,26,{size:13,weight:600});
+  if(r&&p>=1)txt(r.ok?'Mind a négy helyzet stabil':'A daru felborult',20,48,{size:13,weight:600,col:r.ok?C.ok:C.bad});}
+}
+];
+
+/* ---------- state ---------- */
+const LSKEY='statika-idogep-v1';
+let progress={stars:Array(8).fill(0),open:0,teacher:false};
+try{const d=JSON.parse(localStorage.getItem(LSKEY)||'null');if(d&&Array.isArray(d.stars)&&d.stars.length===8)progress=Object.assign(progress,d);}catch(e){}
+function save(){try{localStorage.setItem(LSKEY,JSON.stringify(progress));}catch(e){}}
+let cur=Math.min(progress.open,7);
+const ST=LEVELS.map(L=>Object.assign(L.init(),{tries:0,hint:false}));
+let result=null,anim=null,shown=false;
+
+function start(data){
+  if(data&&data.progress)progress=data.progress;
+  if(data&&typeof data.cur==='number')cur=data.cur;
+  try{window.claude?.hot?.snapshot?.(()=>({progress,cur}));}catch(e){}
+  readColors();resize();renderTimeline();renderLevel();
+}
+
+/* ---------- UI ---------- */
+const ctlBox=$('controls');
+function mk(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+function changed(){if(anim)return;if(result){result=null;$('result').hidden=true;}draw();}
+const ui={
+  slider(o){const w=mk('div','ctl'),id='c-'+o.id;w.innerHTML=`<div class="ctl-head"><label for="${id}">${o.label}</label><output id="${id}-o" for="${id}"></output></div><input type="range" id="${id}" min="${o.min}" max="${o.max}" step="${o.step}" value="${o.value}">`;
+    const inp=w.querySelector('input'),out=w.querySelector('output'),show=v=>out.textContent=fmt(v,o.dec)+(o.unit?(o.unit==='°'?'°':' '+o.unit):'');show(o.value);
+    inp.addEventListener('input',()=>{const v=parseFloat(inp.value);show(v);o.on(v);changed();});ctlBox.appendChild(w);},
+  toggle(o){const w=mk('label','switch'),id='c-'+o.id;w.setAttribute('for',id);w.innerHTML=`<input type="checkbox" id="${id}" ${o.value?'checked':''}><span>${o.label}</span>`;w.querySelector('input').addEventListener('change',e=>{o.on(e.target.checked);changed();});ctlBox.appendChild(w);},
+  stepper(o){const w=mk('div','ctl'),id='c-'+o.id;w.innerHTML=`<span class="lbl" id="${id}-l">${o.label}</span><div class="stepper" role="group" aria-labelledby="${id}-l"><button type="button" id="${id}-m" aria-label="Kevesebb">−</button><span class="val" id="${id}" aria-live="polite"></span><button type="button" id="${id}-p" aria-label="Több">+</button><span class="desc"></span></div>`;
+    let v=o.value;const val=w.querySelector('.val'),desc=w.querySelector('.desc'),set=()=>{val.textContent=v;desc.textContent=o.describe?o.describe(v):'';};set();
+    w.querySelector(`#${id}-m`).addEventListener('click',()=>{if(v>o.min){v--;o.on(v);set();changed();}});
+    w.querySelector(`#${id}-p`).addEventListener('click',()=>{if(v<o.max){v++;o.on(v);set();changed();}});ctlBox.appendChild(w);},
+  segmented(o){const w=mk('div','wrow'),id='c-'+o.id;w.innerHTML=`<span class="wname" id="${id}-l">${o.label}</span>`;const seg=mk('div','seg');seg.setAttribute('role','group');seg.setAttribute('aria-labelledby',id+'-l');
+    o.options.forEach(op=>{const b=mk('button',op.cls||'',op.t);b.type='button';b.id=`${id}-${op.v}`;b.setAttribute('aria-pressed',String(op.v===o.value));b.addEventListener('click',()=>{o.on(op.v===o.value&&op.v!==0?(typeof op.v==='string'?null:0):op.v);if(o.rerender)renderControls();changed();
+      const nb=document.getElementById(b.id);if(nb)nb.focus();});seg.appendChild(b);});w.appendChild(seg);ctlBox.appendChild(w);},
+  note(t){ctlBox.appendChild(mk('p','note',t));}
+};
+function renderControls(){ctlBox.innerHTML='';LEVELS[cur].controls(ST[cur],ui);}
+function starStr(n){return '★'.repeat(n)+'☆'.repeat(3-n);}
+function isOpen(i){return progress.teacher||i<=progress.open;}
+function renderTimeline(){const ol=$('timeline');ol.innerHTML='';LEVELS.forEach((L,i)=>{const li=mk('li',[progress.stars[i]?'done':'',i===cur?'current':''].join(' ').trim());const open=isOpen(i);
+  li.innerHTML=`<button type="button" ${open?'':'disabled'} ${i===cur?'aria-current="step"':''}><span class="tl-dot"></span><span class="tl-year">${L.year}</span><span class="tl-era">${L.era}</span><span class="tl-stars ${open?'':'locked'}">${open?starStr(progress.stars[i]):'zárva'}</span></button>`;
+  li.querySelector('button').addEventListener('click',()=>{if(!open||anim)return;cur=i;renderTimeline();renderLevel();});ol.appendChild(li);});
+  const tot=progress.stars.reduce((a,b)=>a+b,0);$('totalStars').textContent=`${tot} / 24 ★`;
+  $('teacherBtn').setAttribute('aria-pressed',String(!!progress.teacher));
+  const c=ol.children[cur];if(c&&c.scrollIntoView){const rail=ol.parentElement;rail.scrollLeft=Math.max(0,c.offsetLeft-rail.clientWidth/2+60);}}
+function renderMeta(){const s=ST[cur];$('meta').textContent=`Próbák: ${s.tries} · ${starStr(progress.stars[cur])}`;}
+function renderLevel(){const L=LEVELS[cur],s=ST[cur];result=null;anim=null;
+  $('eyebrow').textContent=`${cur+1}. szint / 8 · ${L.era}`;$('title').textContent=L.title;$('story').textContent=L.story;$('task').textContent=L.task;
+  $('sheetLeft').textContent=`${L.year} · ${L.place}`;$('sheetRight').textContent=L.principle;
+  cv.setAttribute('aria-label',`${L.title}: ${L.task}`);
+  $('givens').innerHTML=L.data.map(([k,v])=>`<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
+  renderControls();
+  const hint=$('hint');hint.innerHTML=`<strong>Tipp</strong>${L.hint}`;hint.hidden=!s.hint;$('hintBtn').textContent=s.hint?'Tipp elrejtése':'Tipp';
+  $('result').hidden=true;renderLearned();renderMeta();$('tryBtn').disabled=false;ctlBox.disabled=false;draw();}
+function renderLearned(){const L=LEVELS[cur],box=$('learned');if(!progress.stars[cur]){box.hidden=true;return;}
+  const tot=progress.stars.reduce((a,b)=>a+b,0),all=progress.stars.every(x=>x>0);
+  let html=`<h3>Mit tanultunk</h3><div class="formula">${L.formula}</div><p>${L.learned}</p>`;
+  if(cur<7)html+=`<div class="actions"><button class="btn" type="button" id="nextBtn">Tovább: ${LEVELS[cur+1].era} →</button></div>`;
+  else if(all)html+=`<p class="finale">Végigértél az időgépen: ${tot} / 24 csillag.</p><div class="actions"><button class="btn ghost" type="button" id="againBtn">Újra az elejéről</button></div>`;
+  else html+=`<p>Ez volt az utolsó korszak. Néhány korábbi szintet még nem oldottál meg; az idővonalon visszaléphetsz.</p>`;
+  box.innerHTML=html;box.hidden=false;
+  const nb=$('nextBtn');if(nb)nb.addEventListener('click',()=>{cur++;renderTimeline();renderLevel();$('stage').scrollIntoView({behavior:reduced?'auto':'smooth',block:'start'});});
+  const ab=$('againBtn');if(ab)ab.addEventListener('click',()=>{cur=0;renderTimeline();renderLevel();window.scrollTo({top:0,behavior:reduced?'auto':'smooth'});});}
+function showResult(){const r=result,box=$('result');box.className='result '+(r.ok?'ok':'bad');
+  const rows=r.rows.map(([a,b,c,ok])=>`<tr><td>${a}</td><td>${b}</td><td>${c}</td><td class="mk ${ok?'y':'n'}">${ok?'✓':'✗'}</td></tr>`).join('');
+  box.innerHTML=`<span class="pill">${r.ok?'Sikerült':'Nem sikerült'}</span><p>${r.msg}</p><table class="rtable"><tbody>${rows}</tbody></table>`;box.hidden=false;}
+
+$('tryBtn').addEventListener('click',()=>{if(anim)return;const L=LEVELS[cur],s=ST[cur];s.tries++;result=L.evaluate(s);$('result').hidden=true;
+  anim={t0:performance.now(),dur:reduced?1:(L.dur||2000),p:0};$('tryBtn').disabled=true;ctlBox.disabled=true;renderMeta();requestAnimationFrame(frame);});
+$('hintBtn').addEventListener('click',()=>{const s=ST[cur];s.hint=!s.hint;$('hint').hidden=!s.hint;$('hintBtn').textContent=s.hint?'Tipp elrejtése':'Tipp';});
+$('teacherBtn').addEventListener('click',()=>{progress.teacher=!progress.teacher;save();renderTimeline();});
+let resetArm=false;$('resetBtn').addEventListener('click',e=>{if(!resetArm){resetArm=true;e.target.textContent='Biztosan? Kattints újra';setTimeout(()=>{resetArm=false;e.target.textContent='Haladás törlése';},4000);return;}
+  resetArm=false;e.target.textContent='Haladás törlése';progress={stars:Array(8).fill(0),open:0,teacher:false};ST.forEach((s,i)=>Object.assign(s,LEVELS[i].init(),{tries:0,hint:false}));save();cur=0;renderTimeline();renderLevel();});
+
+function onAnimEnd(){const s=ST[cur];$('tryBtn').disabled=false;ctlBox.disabled=false;showResult();
+  if(result.ok){let st=s.tries===1?3:s.tries===2?2:1;if(s.hint)st=Math.min(st,2);if(st>progress.stars[cur])progress.stars[cur]=st;if(cur<7&&progress.open<cur+1)progress.open=cur+1;save();renderTimeline();renderLearned();}
+  renderMeta();}
+
+/* ---------- canvas loop ---------- */
+function draw(){if(!C.ink)readColors();const p=anim?anim.p:1;LEVELS[cur].draw(ST[cur],p,result);}
+function frame(now){if(!anim){draw();return;}anim.p=clamp((now-anim.t0)/anim.dur,0,1);draw();if(anim.p<1)requestAnimationFrame(frame);else{anim=null;onAnimEnd();}}
+function resize(){const w=cv.getBoundingClientRect().width||800,dpr=Math.min(2,window.devicePixelRatio||1);cv.width=Math.round(w*dpr);cv.height=Math.round(w*H/W*dpr);ctx.setTransform(cv.width/W,0,0,cv.height/H,0,0);FS=clamp(560/w,1,1.8);if(!anim)draw();}
+if(window.ResizeObserver)new ResizeObserver(()=>resize()).observe(cv);else window.addEventListener('resize',resize);
+const mq=window.matchMedia?matchMedia('(prefers-color-scheme: dark)'):null;if(mq&&mq.addEventListener)mq.addEventListener('change',()=>{readColors();draw();});
+new MutationObserver(()=>{readColors();draw();}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','class','style']});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>draw());
+
+const hot=window.claude?.hot;
+if(hot&&hot.ready)hot.ready(start);else start(hot?.data??{});
+})();
+</script>
+</body>
+</html>
