@@ -1,5 +1,7 @@
 # Statika Időgép
 
+**Játék:** https://statika-idogep.vercel.app
+
 Nyolcszintes, böngészőben futó fizikajáték a **statika** témakör tanulásához. A játékos az őskortól a modern korig halad, és minden korszakban egy-egy statikai elvet alkalmaz egy interaktív feladatban.
 
 | # | Korszak | Feladat | Elv |
